@@ -1,7 +1,6 @@
-mod neuron;
+mod network;
 
 fn main() {
     println!("Hello, world!");
-    let neuron = neuron::Neuron {weight: 255};
-    println!("{}", neuron.weight);
+    let mut network = network::Network::new(10000);
 }
