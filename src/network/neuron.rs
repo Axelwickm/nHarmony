@@ -1,9 +1,7 @@
-pub struct Neuron<'a> {
+pub struct Neuron {
+    pub id: usize,
     pub weight: u8,
 
-    pub x: i64,
-    pub y: i64,
-    pub z: i64,
-
-    pub connected_neurons: Vec<&'a Neuron<'a>>,
+    pub coords: [f64; 3],
+    pub connections : Vec<usize>,
 }

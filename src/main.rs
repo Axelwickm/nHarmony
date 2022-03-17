@@ -6,7 +6,7 @@ fn main() {
     println!("Hello, world!");
 
     let start = Instant::now();
-    let network = network::Network::new(100000);
+    let network = network::Network::new(1000000);
     let end = Instant::now();
 
     network.print_info();
