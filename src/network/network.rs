@@ -1,4 +1,4 @@
-mod neuron;
+pub mod neuron;
 use rand::{thread_rng, Rng};
 
 extern crate rayon;
