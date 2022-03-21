@@ -21,30 +21,17 @@ impl Network {
         let half = size / 2.0;
 
         // Run parallel for each neuron
-        let mut neurons : Vec<neuron::Neuron> = (0..n_neurons).into_par_iter().map(|i| {
-            let mut rng = thread_rng();
-            let x = rng.gen_range(-half..half);
-            let y = rng.gen_range(-half..half);
-            let z = rng.gen_range(-half..half);
-            let neuron = neuron::Neuron {
-                id: i,
-                weight: 255,
-                coords: [x, y, z],
-                connections: Vec::new(),
-            };
-
-            neuron
-        }).collect();
+        let mut neurons : Vec<neuron::Neuron> = (0..n_neurons).into_par_iter().map(|i| neuron::Neuron::new(i, half)).collect();
 
         let connection_inds = Network::form_connections(&neurons);
         for (i, connections) in connection_inds.iter().enumerate() {
-            neurons[i].connections = connections.to_vec();
+            neurons[i].connections = connections.iter().map(|(id, dist)| (*id, (f64::max(1.0, dist/5.0)*255.0) as u8, 128)).collect();
         }
 
         Network { neurons }
     }
 
-    fn form_connections(neurons: &Vec<neuron::Neuron>) -> Vec<Vec<usize>> {
+    fn form_connections(neurons: &Vec<neuron::Neuron>) -> Vec<Vec<(usize, f64)>> {
         let mut kdtree = KdTree::new(3);
         for neuron in neurons {
             kdtree.add(neuron.coords, neuron).unwrap();
@@ -65,13 +52,21 @@ impl Network {
         // Convert references to indexes
         let connection_inds = connection_refs.into_iter().map(|(_, neighbours)| {
             let mut connections = Vec::new();
-            for (_, neighbour) in neighbours {
-                connections.push(neighbour.id);
+            for (dist, neighbour) in neighbours {
+                connections.push((neighbour.id, dist));
             }
             connections
         }).collect();
 
         connection_inds
+    }
+
+    pub fn random_activations(&mut self) {
+        // Go through every neuron and set a random u8 activation value
+        for neuron in &mut self.neurons {
+            neuron.random_activation();
+        }
+
     }
 
     pub fn print_info(&self) {

@@ -6,10 +6,13 @@ fn main() {
     println!("Hello, world!");
 
     let start = Instant::now();
-    let network = network::Network::new(1000000);
+    let mut network = network::Network::new(1000000);
     let end = Instant::now();
+
+    println!("{:?}", end.duration_since(start));
 
     network.print_info();
 
-    println!("{:?}", end.duration_since(start));
+    network.random_activations();
+
 }
