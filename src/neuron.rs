@@ -1,4 +1,4 @@
-mod network;
+use crate::event_deque;
 
 pub struct Neuron {
     pub id: usize,
@@ -40,8 +40,9 @@ impl Neuron {
         let above_threshold = self.last_activation > self.threshold;
         above_threshold
     }
-
-    pub fn simulate_voltage(&mut self, input_voltage: u8, time: u64) -> bool { // Return true if above threshold
+    
+    // Return true if above threshold
+    pub fn simulate_voltage(&mut self, input_voltage: u8, time: u64) -> bool { 
         let delta_time = time - self.last_activation_time;
         let decay_factor = 0.5_f32.powf(delta_time as f32 / self.half_life);
         self.last_activation = (self.last_activation as f32 * decay_factor) as u8;
@@ -54,8 +55,15 @@ impl Neuron {
         above_threshold && !recharging
     }
 
-    pub fn schedule_post_synpatic_action_potential(&mut self, time: u64) {
+    pub fn schedule_post_synpatic_action_potentials(&mut self,
+                                                    events: &mut event_deque::EventDeque,
+                                                    time: u64) {
         self.last_action_potential = time;
+        for (neuron_id, weight, delay) in &self.connections {
+            events.add_action_potential(time + *delay as u64, 
+                                          self.id, *neuron_id,
+                                          *weight * self.last_activation as u8);
+        }
 
     }
 }

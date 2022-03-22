@@ -1,6 +1,3 @@
-mod neuron;
-use rand::{thread_rng, Rng};
-
 extern crate rayon;
 use rayon::prelude::*;
 
@@ -8,8 +5,12 @@ extern crate kdtree;
 use kdtree::KdTree;
 use kdtree::distance::squared_euclidean;
 
+use crate::neuron;
+use crate::event_deque;
+
 pub struct Network {
     pub neurons: Vec<neuron::Neuron>,
+    event_deques: event_deque::EventDeque,
 }
 
 impl Network {
@@ -25,10 +26,10 @@ impl Network {
 
         let connection_inds = Network::form_connections(&neurons);
         for (i, connections) in connection_inds.iter().enumerate() {
-            neurons[i].connections = connections.iter().map(|(id, dist)| (*id, (f64::max(1.0, dist/5.0)*255.0) as u8, 128)).collect();
+            neurons[i].connections = connections.iter().map(|(id, dist)| (*id, (f64::max(1.0, dist/5.0)*10.0) as u8, 128)).collect();
         }
 
-        Network { neurons }
+        Network { neurons, event_deques: event_deque::EventDeque::new()}
     }
 
     fn form_connections(neurons: &Vec<neuron::Neuron>) -> Vec<Vec<(usize, f64)>> {
@@ -64,10 +65,38 @@ impl Network {
     pub fn random_activations(&mut self) {
         // Go through every neuron and set a random u8 activation value
         for neuron in &mut self.neurons {
-            neuron.random_activation();
+            let spiked = neuron.random_activation();
+            if spiked {
+                neuron.schedule_post_synpatic_action_potentials(
+                    &mut self.event_deques,
+                    0
+                );
+            }
+        }
+
+        // Print how many scheduled spikes
+        println!("Initially scheduled {} spikes",
+                 self.event_deques.len());
+
+    }
+
+    pub fn simulate_next_event(&mut self) {
+        let first = self.event_deques.pop();
+        if first.is_none() {
+            return;
+        }
+
+        let first = first.unwrap();
+        let spiked = self.neurons[first.to].simulate_voltage(first.voltage, first.time);
+        if spiked {
+            self.neurons[first.to].schedule_post_synpatic_action_potentials(
+                &mut self.event_deques,
+                first.time,
+            );
         }
 
     }
+
 
     pub fn print_info(&self) {
         println!("Network info:");
