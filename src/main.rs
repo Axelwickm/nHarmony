@@ -22,8 +22,8 @@ fn main() {
 
     network.random_activations();
 
-    // Run 10000 times
-    for _ in 0..10000 {
+    // Run many times
+    for _ in 0..100000000 {
         network.simulate_next_event();
     }
 

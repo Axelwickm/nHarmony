@@ -26,7 +26,7 @@ impl Network {
 
         let connection_inds = Network::form_connections(&neurons);
         for (i, connections) in connection_inds.iter().enumerate() {
-            neurons[i].connections = connections.iter().map(|(id, dist)| (*id, (f64::max(1.0, dist/5.0)*10.0) as u8, 128)).collect();
+            neurons[i].connections = connections.iter().map(|(id, dist)| (*id, 128, (dist/5.0 * 25.0) as u8+1)).collect();
         }
 
         Network { neurons, event_deques: event_deque::EventDeque::new()}
@@ -51,10 +51,12 @@ impl Network {
             }).collect();
 
         // Convert references to indexes
-        let connection_inds = connection_refs.into_iter().map(|(_, neighbours)| {
+        let connection_inds = connection_refs.into_iter().map(|(neuron, neighbours)| {
             let mut connections = Vec::new();
             for (dist, neighbour) in neighbours {
-                connections.push((neighbour.id, dist));
+                if neighbour.id != neuron.id {
+                    connections.push((neighbour.id, dist));
+                }
             }
             connections
         }).collect();
@@ -95,11 +97,14 @@ impl Network {
             );
         }
 
+        println!("Time: {}, Scheduled: {}", first.time, self.event_deques.len());
+
     }
 
 
     pub fn print_info(&self) {
         println!("Network info:");
         println!("\tNeurons: {}", self.neurons.len());
+        println!("\tEvent deques: {}", self.event_deques.len());
     }
 }

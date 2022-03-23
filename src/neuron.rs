@@ -24,9 +24,9 @@ impl Neuron {
                 rand::random::<f64>() * 2.0 * coord_limit - coord_limit,
                 rand::random::<f64>() * 2.0 * coord_limit - coord_limit,
             ],
-            threshold: rand::random::<u8>(),
-            half_life: 20.0,
-            refractory_period: 10,
+            threshold: rand::random::<u8>()/2+128,
+            half_life: 10.0,
+            refractory_period:20,
             connections: Vec::new(),
             last_activation: 0,
             last_activation_time: 0,
@@ -60,9 +60,10 @@ impl Neuron {
                                                     time: u64) {
         self.last_action_potential = time;
         for (neuron_id, weight, delay) in &self.connections {
+            let voltage = *weight + self.last_activation as u8;
             events.add_action_potential(time + *delay as u64, 
                                           self.id, *neuron_id,
-                                          *weight * self.last_activation as u8);
+                                          voltage);
         }
 
     }

@@ -15,7 +15,6 @@ impl EventDeque {
 
     pub fn pop(&mut self) -> Option<ActionPotential> {
         let first = self.events.pop();
-        println!("{:?}", first);
         first
     }
 
