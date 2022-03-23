@@ -15,7 +15,7 @@ impl fmt::Debug for ActionPotential {
 
 impl PartialOrd for ActionPotential {
     fn partial_cmp(&self, other: &ActionPotential) -> Option<std::cmp::Ordering> {
-       self.time.partial_cmp(&other.time)
+        other.time.partial_cmp(&self.time)
     }
 }
 
@@ -27,7 +27,7 @@ impl PartialEq for ActionPotential {
 
 impl Ord for ActionPotential {
     fn cmp(&self, other: &ActionPotential) -> std::cmp::Ordering {
-        self.time.cmp(&other.time)
+        other.time.cmp(&self.time)
     }
 }
 
