@@ -6,6 +6,7 @@ use kdtree::KdTree;
 use kdtree::distance::squared_euclidean;
 
 use crate::neuron;
+use crate::synapse;
 use crate::event_deque;
 
 pub struct Network {
@@ -26,7 +27,8 @@ impl Network {
 
         let connection_inds = Network::form_connections(&neurons);
         for (i, connections) in connection_inds.iter().enumerate() {
-            neurons[i].connections = connections.iter().map(|(id, dist)| (*id, 128, (dist/5.0 * 25.0) as u8+1)).collect();
+            neurons[i].connections = connections.iter().map(|(id, dist)|
+                                                            synapse::Synapse::new(*id, dist) ).collect();
         }
 
         Network { neurons, event_deques: event_deque::EventDeque::new()}

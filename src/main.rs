@@ -3,6 +3,7 @@ use std::time::{Instant};
 
 mod network;
 mod neuron;
+mod synapse;
 mod action_potential;
 mod event_deque;
 

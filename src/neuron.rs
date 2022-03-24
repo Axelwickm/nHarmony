@@ -1,4 +1,5 @@
 use crate::event_deque;
+use crate::synapse;
 
 pub struct Neuron {
     pub id: usize,
@@ -7,7 +8,7 @@ pub struct Neuron {
     pub threshold: u8, // Serves as bias
     pub half_life: f32, // ms
     pub refractory_period: u64, // ms
-    pub connections : Vec<(usize, u8, u8)>, 
+    pub connections : Vec<synapse::Synapse>, 
 
     pub last_activation: u8,
     pub last_activation_time: u64,
@@ -26,7 +27,7 @@ impl Neuron {
             ],
             threshold: rand::random::<u8>()/2+128,
             half_life: 10.0,
-            refractory_period:20,
+            refractory_period: rand::random::<u64>() % 20 + 5,
             connections: Vec::new(),
             last_activation: 0,
             last_activation_time: 0,
@@ -59,10 +60,10 @@ impl Neuron {
                                                     events: &mut event_deque::EventDeque,
                                                     time: u64) {
         self.last_action_potential = time;
-        for (neuron_id, weight, delay) in &self.connections {
-            let voltage = *weight + self.last_activation as u8;
-            events.add_action_potential(time + *delay as u64, 
-                                          self.id, *neuron_id,
+        for synapse in &self.connections {
+            let voltage = synapse.weight + self.last_activation as u8;
+            events.add_action_potential(time + synapse.delay as u64, 
+                                          self.id, synapse.to,
                                           voltage);
         }
 
