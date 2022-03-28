@@ -13,9 +13,16 @@ extern crate glium;
 extern crate glutin;
 
 fn main() {
-    let nr = network_renderer::NetworkRenderer::new();
-    for _ in 0..100 {
-        nr.render();
+    let neuron_count = 1000000;
+    let neurons_per_group = 800;
+    if (neuron_count % neurons_per_group) != 0 {
+        panic!("neuron_count must be divisible by neurons_per_group");
+    }
+    let group_count = neuron_count / neurons_per_group;
+
+    let nr = network_renderer::NetworkRenderer::new(neurons_per_group, group_count);
+    for t in 0..100 {
+        nr.render(t);
         std::thread::sleep(std::time::Duration::from_millis(100));
     }
 
@@ -24,7 +31,7 @@ fn main() {
     println!("Building network");
 
     let start = Instant::now();
-    let mut network = network::Network::new(1000000);
+    let mut network = network::Network::new(neuron_count as usize);
     let end = Instant::now();
 
     println!("{:?}", end.duration_since(start));

@@ -19,9 +19,15 @@ pub struct NetworkRenderer {
 }
 
 impl<'a> NetworkRenderer {
-    pub fn new() -> NetworkRenderer {
+    pub fn new(neuron_count : u32, channel_count: u32) -> NetworkRenderer {
+        println!("Creating network renderer  with {} neurons and {} channels", neuron_count, channel_count);
+        let width = channel_count;
+        let height = neuron_count;
+
         let event_loop = glutin::event_loop::EventLoop::new();
-        let wb = glutin::window::WindowBuilder::new();
+        let wb = glutin::window::WindowBuilder::new()
+            .with_title("Network Renderer")
+            .with_inner_size(glutin::dpi::LogicalSize::new(width as f64, height as f64));
         let cb = glutin::ContextBuilder::new();
         let display = glium::Display::new(wb, cb, &event_loop).unwrap();
         println!("OpenGL version: {:?}", display.get_opengl_version());
@@ -66,6 +72,8 @@ impl<'a> NetworkRenderer {
                 fragment: "
                     #version 140
 
+                    uniform uint time;
+
                     out vec4 color;
 
                     void main() {
@@ -74,6 +82,15 @@ impl<'a> NetworkRenderer {
                 "
             }
         ).unwrap();
+
+        // Empty 2D 256x256 texture
+        let texture = glium::texture::Texture2d::empty_with_format(
+            &display,
+            glium::texture::UncompressedFloatFormat::U8,
+            glium::texture::MipmapsOption::NoMipmap,
+            neuron_count,
+            channel_count,
+        );
 
         NetworkRenderer {
             running: true,
@@ -85,8 +102,10 @@ impl<'a> NetworkRenderer {
         }
     }
 
-    pub fn render(&self) {
-        let uniforms = uniform! {};
+    pub fn render(&self, time: u64) {
+        let uniforms = uniform! {
+            time: time as u32 // No u64 support. Will cause rendering to be bugged sometimes, but it's not a big deal.
+        };
 
         let mut target = self.display.draw();
         target.clear_color(0.0, 0.0, 0.0, 0.0);
