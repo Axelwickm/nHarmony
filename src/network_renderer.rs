@@ -48,7 +48,7 @@ impl<'a> NetworkRenderer {
         };
 
         let index_buffer =
-            glium::IndexBuffer::new(&display, PrimitiveType::TrianglesList, &[0u16, 2, 0, 3])
+            glium::IndexBuffer::new(&display, PrimitiveType::TrianglesList, &[0u16, 1, 2, 0, 2, 3])
                 .unwrap();
 
         let program = program!(
@@ -69,7 +69,7 @@ impl<'a> NetworkRenderer {
                     out vec4 color;
 
                     void main() {
-                        color = vec4(1.0, 0.0, 0.0, 0.5);
+                        color = vec4(1.0, 1.0, 1.0, 1);
                     }
                 "
             }
