@@ -15,12 +15,16 @@ pub struct NetworkRenderer {
     event_loop: glutin::event_loop::EventLoop<()>,
     vertex_buffer: glium::VertexBuffer<Vertex>,
     index_buffer: glium::IndexBuffer<u16>,
+    texture: glium::texture::Texture2d,
     program: glium::Program,
 }
 
 impl<'a> NetworkRenderer {
-    pub fn new(neuron_count : u32, channel_count: u32) -> NetworkRenderer {
-        println!("Creating network renderer  with {} neurons and {} channels", neuron_count, channel_count);
+    pub fn new(neuron_count: u32, channel_count: u32) -> NetworkRenderer {
+        println!(
+            "Creating network renderer  with {} neurons and {} channels",
+            neuron_count, channel_count
+        );
         let width = channel_count;
         let height = neuron_count;
 
@@ -53,9 +57,37 @@ impl<'a> NetworkRenderer {
             .unwrap()
         };
 
-        let index_buffer =
-            glium::IndexBuffer::new(&display, PrimitiveType::TrianglesList, &[0u16, 1, 2, 0, 2, 3])
-                .unwrap();
+        let index_buffer = glium::IndexBuffer::new(
+            &display,
+            PrimitiveType::TrianglesList,
+            &[0u16, 1, 2, 0, 2, 3],
+        )
+        .unwrap();
+
+        let texture = glium::texture::Texture2d::empty_with_format(
+            &display,
+            glium::texture::UncompressedFloatFormat::U8,
+            glium::texture::MipmapsOption::NoMipmap,
+            channel_count,
+            neuron_count,
+        )
+        .unwrap();
+
+        // Set the texture to be filled with random values (use vec of vec for this)
+        let mut pixels: Vec<Vec<u8>> = vec![vec![0 as u8; channel_count as usize]; neuron_count as usize];
+        for i in 0..neuron_count {
+            for j in 0..channel_count {
+                //pixels[i as usize][j as usize] = (i * j) as u8;
+                pixels[i as usize][j as usize] = rand::random::<u8>();
+            }
+        }
+
+        texture.write(glium::Rect {
+            left: 0,
+            bottom: 0,
+            width: channel_count,
+            height: neuron_count,
+        }, pixels);
 
         let program = program!(
             &display,
@@ -73,24 +105,21 @@ impl<'a> NetworkRenderer {
                     #version 140
 
                     uniform uint time;
+                    uniform sampler2D tex;
 
                     out vec4 color;
 
                     void main() {
-                        color = vec4(1.0, 1.0, 1.0, 1);
+                        float x = float(gl_FragCoord.x);
+                        float y = float(gl_FragCoord.y);
+                        float t_now = texture(tex, vec2(x, y)).r;
+                        
+                        color = vec4(t_now, t_now, t_now, 1.0);
                     }
                 "
             }
-        ).unwrap();
-
-        // Empty 2D 256x256 texture
-        let texture = glium::texture::Texture2d::empty_with_format(
-            &display,
-            glium::texture::UncompressedFloatFormat::U8,
-            glium::texture::MipmapsOption::NoMipmap,
-            neuron_count,
-            channel_count,
-        );
+        )
+        .unwrap();
 
         NetworkRenderer {
             running: true,
@@ -98,13 +127,15 @@ impl<'a> NetworkRenderer {
             event_loop,
             vertex_buffer,
             index_buffer,
+            texture,
             program,
         }
     }
 
     pub fn render(&self, time: u64) {
         let uniforms = uniform! {
-            time: time as u32 // No u64 support. Will cause rendering to be bugged sometimes, but it's not a big deal.
+            time: time as u32, // No u64 support. Will cause rendering to be bugged sometimes, but it's not a big deal.
+            tex: &self.texture,
         };
 
         let mut target = self.display.draw();
