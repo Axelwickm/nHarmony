@@ -77,7 +77,6 @@ impl<'a> NetworkRenderer {
         let mut pixels: Vec<Vec<u8>> = vec![vec![0 as u8; channel_count as usize]; neuron_count as usize];
         for i in 0..neuron_count {
             for j in 0..channel_count {
-                //pixels[i as usize][j as usize] = (i * j) as u8;
                 pixels[i as usize][j as usize] = rand::random::<u8>();
             }
         }
@@ -113,7 +112,9 @@ impl<'a> NetworkRenderer {
                         float x = float(gl_FragCoord.x)/float(textureSize(tex, 0).x);
                         float y = float(gl_FragCoord.y)/float(textureSize(tex, 0).y);
                         float t_now = texture(tex, vec2(x, y)).r;
-                        
+                        // Cool screensaver effect
+                        t_now = ((int(t_now*255) + int(time)) % 255)/255.0; 
+
                         color = vec4(t_now, t_now, t_now, 1.0);
                     }
                 "

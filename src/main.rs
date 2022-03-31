@@ -21,9 +21,9 @@ fn main() {
     let group_count = neuron_count / neurons_per_group;
 
     let nr = network_renderer::NetworkRenderer::new(neurons_per_group, group_count);
-    for t in 0..100 {
+    for t in 0..1000 {
         nr.render(t);
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        std::thread::sleep(std::time::Duration::from_millis(50));
     }
 
     return;
