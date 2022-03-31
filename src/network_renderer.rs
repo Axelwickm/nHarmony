@@ -110,8 +110,8 @@ impl<'a> NetworkRenderer {
                     out vec4 color;
 
                     void main() {
-                        float x = float(gl_FragCoord.x);
-                        float y = float(gl_FragCoord.y);
+                        float x = float(gl_FragCoord.x)/float(textureSize(tex, 0).x);
+                        float y = float(gl_FragCoord.y)/float(textureSize(tex, 0).y);
                         float t_now = texture(tex, vec2(x, y)).r;
                         
                         color = vec4(t_now, t_now, t_now, 1.0);
